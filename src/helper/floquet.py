@@ -98,7 +98,6 @@ class Floquet_Magnon:
                   )
         return H
  
-
     def plot_undriven_magnon_band_1(self, steps):
         """
         Plot of the magnon bands for Undriven_Hamiltonian_1
@@ -222,15 +221,13 @@ class Floquet_Magnon:
             plt.axis([-0.005, 1.005, 0, 7])
             plt.xticks([])
 
-    def Floquet_Hk_1(self, k_vec, Ex, Ey, phi):
+    def Floquet_Hk_1(self, k_vec):
         """
         High frequency limit of the Floquet Hamiltonian for case I.
         
         Parameters
         ----------
         k_vec: 2D momentum vector
-        Ex, Ey: amplitude in x and y axes
-        phi: phase angle of light
         
         Returns
         -------
@@ -260,10 +257,10 @@ class Floquet_Magnon:
         H0 = np.array([[v0, 0, r0s, vJc], [0, v0, vJc, r0],[-r0, -vJc, -v0, 0], [-vJc, -r0s, 0, -v0]])
 
         # Define H1 and H-1
-        r1 = vJ * (jv(1, self.Ex) * exp(1j * phi) - jv(1, Em) * exp(1j * k1) * exp(-1j * P2)
+        r1 = vJ * (jv(1, self.Ex) * exp(1j * self.phi) - jv(1, Em) * exp(1j * k1) * exp(-1j * P2)
                    + jv(1, Ep) * exp(1j * k2) * exp(1j * P1))
 
-        r1s = vJ * (-jv(1, self.Ex) * exp(1j * phi) + jv(1, Em) * exp(-1j * k1) * exp(-1j * P2)
+        r1s = vJ * (-jv(1, self.Ex) * exp(1j * self.phi) + jv(1, Em) * exp(-1j * k1) * exp(-1j * P2)
                     - jv(1, Ep) * exp(-1j * k2) * exp(1j * P1))
 
         Hp = np.array([[0, 0, r1s, 0], [0, 0, 0, r1],[-r1, 0, 0, 0], [0, -r1s, 0, 0]])
@@ -276,15 +273,13 @@ class Floquet_Magnon:
         Floquet_H = H0 - (1 / self.omega) * (com1 - com2 + com3)
         return Floquet_H
 
-    def Floquet_Hk_2(self, k_vec, Ex, Ey, phi):
+    def Floquet_Hk_2(self, k_vec):
         """
         High frequency limit of the Floquet Hamiltonian for case II.
         
         Parameters
         ----------
         k_vec: 2D momentum vector
-        Ex, Ey: amplitude in x and y axes
-        phi: phase angle of light
         
         Returns
         -------
@@ -316,10 +311,10 @@ class Floquet_Magnon:
                        [-vJc, 0, -v0, r0], [0, -vJc, r0s, -v0]])
 
         # Define H1 and H-1
-        r1 = vJ * (jv(1, self.Ex) * exp(1j * phi) - jv(1, Em) * exp(1j * k1) * exp(-1j * P2)
+        r1 = vJ * (jv(1, self.Ex) * exp(1j * self.phi) - jv(1, Em) * exp(1j * k1) * exp(-1j * P2)
                    + jv(1, Ep) * exp(1j * k2) * exp(1j * P1))
 
-        r1s = vJ * (- jv(1, self.Ex) * exp(1j * phi) + jv(1, Em) * exp(-1j * k1) * exp(-1j * P2)
+        r1s = vJ * (- jv(1, self.Ex) * exp(1j * self.phi) + jv(1, Em) * exp(-1j * k1) * exp(-1j * P2)
                     - jv(1, Ep) * exp(-1j * k2) * exp(1j * P1))
 
         Hp = np.array([[0, -r1s, 0, 0], [-r1, 0, 0, 0],[0, 0, 0, r1], [0, 0, r1s, 0]])
@@ -332,14 +327,12 @@ class Floquet_Magnon:
         Floquet_H = H0 - (1 /self.omega) * (com1 - com2 + com3)
         return Floquet_H
 
-    def plot_Floquet_magnon_band_1(self, Ex, Ey, phi, steps):
+    def plot_Floquet_magnon_band_1(self, steps):
         """
         Plot of the magnon bands for Floquet Hamiltonian_1.
         
         Parameters
         ----------
-        Ex, Ey: amplitude in x and y axes
-        phi: phase angle of light
         steps: discretized steps
         
         Returns
@@ -359,7 +352,7 @@ class Floquet_Magnon:
         for ix in arange(len(kx)):
             ky = -self.rr * kx[ix] / 3
             k_vec = np.array([kx[ix], ky], float)
-            H = self.Floquet_Hk_1(k_vec, Ex, Ey, phi) # Call the Model Hamiltonian
+            H = self.Floquet_Hk_1(k_vec) # Call the Model Hamiltonian
             eg, ef = la.eig(H)  # Find the eigenvalues and eigenvectors
             eg = sort(real(eg))  # Sort the eigenvalues in ascending order
 
@@ -370,7 +363,7 @@ class Floquet_Magnon:
         for ix in arange(len(kx)):
             ky = self.rr * kx[ix]
             k_vec = np.array([kx[ix], ky], float)
-            H = self.Floquet_Hk_1(k_vec, Ex, Ey, phi) # Call the Model Hamiltonian
+            H = self.Floquet_Hk_1(k_vec) # Call the Model Hamiltonian
             eg, ef = la.eig(H)  # Find the eigenvalues and eigenvectors
             eg = sort(real(eg))  # Sort the eigenvalues in ascending order
 
@@ -381,7 +374,7 @@ class Floquet_Magnon:
         for ix in arange(len(kx)):
             ky = self.rr * kx[ix]
             k_vec = np.array([kx[ix], ky], float)
-            H = self.Floquet_Hk_1(k_vec, Ex, Ey, phi)  # Call the Model Hamiltonian
+            H = self.Floquet_Hk_1(k_vec)  # Call the Model Hamiltonian
             eg, ef = la.eig(H)  # Find the eigenvalues and eigenvectors
             eg = sort(real(eg))  # Sort the eigenvalues in ascending order
 
@@ -402,14 +395,12 @@ class Floquet_Magnon:
             plt.axis([-0.005, 1.005, 0, 4])
             plt.xticks([])
 
-    def plot_Floquet_magnon_band_2(self, Ex, Ey, phi, steps):
+    def plot_Floquet_magnon_band_2(self, steps):
         """
         Plot of the magnon bands for Floquet Hamiltonian_2
         
         Parameters
         ----------
-        Ex, Ey: amplitude in x and y axes
-        phi: phase angle of light
         steps: discretized steps
         
         Returns
@@ -429,7 +420,7 @@ class Floquet_Magnon:
         for ix in arange(len(kx)):
             ky = -self.rr * kx[ix] / 3
             k_vec = np.array([kx[ix], ky], float)
-            H = self.Floquet_Hk_2(k_vec, Ex, Ey, phi) # Call the Model Hamiltonian
+            H = self.Floquet_Hk_2(k_vec) # Call the Model Hamiltonian
             eg, ef = la.eig(H)  # Find the eigenvalues and eigenvectors
             eg = sort(real(eg))  # Sort the eigenvalues in ascending order
 
@@ -440,7 +431,7 @@ class Floquet_Magnon:
         for ix in arange(len(kx)):
             ky = self.rr * kx[ix]
             k_vec = np.array([kx[ix], ky], float)
-            H = self.Floquet_Hk_2(k_vec, Ex, Ey, phi) # Call the Model Hamiltonian
+            H = self.Floquet_Hk_2(k_vec) # Call the Model Hamiltonian
             eg, ef = la.eig(H)  # Find the eigenvalues and eigenvectors
             eg = sort(real(eg))  # Sort the eigenvalues in ascending order
 
@@ -451,7 +442,7 @@ class Floquet_Magnon:
         for ix in arange(len(kx)):
             ky = self.rr * kx[ix]
             k_vec = np.array([kx[ix], ky], float)
-            H = self.Floquet_Hk_2(k_vec, Ex, Ey, phi) # Call the Model Hamiltonian
+            H = self.Floquet_Hk_2(k_vec) # Call the Model Hamiltonian
             eg, ef = la.eig(H)  # Find the eigenvalues and eigenvectors
             eg = sort(real(eg))  # Sort the eigenvalues in ascending order
 
@@ -489,7 +480,7 @@ class Floquet_Magnon:
         U = in_product / np.abs(in_product)
         return U
 
-    def latF_1(self, k_vec, Ex, Ey, phi, Dk, dim):
+    def latF_1(self, k_vec, Dk, dim):
         """ 
         This function calulates the lattice field for Case I using the definition:
         
@@ -501,8 +492,6 @@ class Floquet_Magnon:
         Parameters
         ----------
         k_vec = (kx,ky): 2D momentum vector
-        Ex, Ey: amplitude in x and y axes
-        phi: phase angle of light
         Dk = (Dkx,Dky): 2D step vector
         dim: dimension of H(k)
         
@@ -511,23 +500,23 @@ class Floquet_Magnon:
         lattice field corresponding to each band as an n-dimensional vector
         """
         k = k_vec
-        E, aux = la.eig(self.Floquet_Hk_1(k, Ex, Ey, phi))
+        E, aux = la.eig(self.Floquet_Hk_1(k))
         idx = E.real.argsort()
         E_sort = E[idx].real
         psi = aux[:, idx]
 
         k = np.array([k_vec[0] + Dk[0], k_vec[1]], float)
-        E, aux = la.eig(self.Floquet_Hk_1(k, Ex, Ey, phi))
+        E, aux = la.eig(self.Floquet_Hk_1(k))
         idx = E.real.argsort()
         psiDx = aux[:, idx]
 
         k = np.array([k_vec[0], k_vec[1] + Dk[1]], float)
-        E, aux = la.eig(self.Floquet_Hk_1(k, Ex, Ey, phi))
+        E, aux = la.eig(self.Floquet_Hk_1(k))
         idx = E.real.argsort()
         psiDy = aux[:, idx]
 
         k = np.array([k_vec[0] + Dk[0], k_vec[1] + Dk[1]], float)
-        E, aux = la.eig(self.Floquet_Hk_1(k, Ex, Ey, phi))
+        E, aux = la.eig(self.Floquet_Hk_1(k))
         idx = E.real.argsort()
         psiDxDy = aux[:, idx]
 
@@ -547,7 +536,7 @@ class Floquet_Magnon:
         return F12, E_sort
 
 
-    def latF_2(self, k_vec, Ex, Ey, phi, Dk, dim):
+    def latF_2(self, k_vec, Dk, dim):
         """
         This function calulates the lattice field for Case II using the definition:
         
@@ -559,8 +548,6 @@ class Floquet_Magnon:
         Parameters
         ----------
         k_vec = (kx,ky): 2D momentum vector
-        Ex, Ey: amplitude in x and y axes
-        phi: phase angle of light
         Dk = (Dkx,Dky): 2D step vector
         dim: dimension of H(k)
         
@@ -570,23 +557,23 @@ class Floquet_Magnon:
         """
         # Here we calculate the band structure and sort them from low to high eigenenergies
         k = k_vec
-        E, aux = la.eig(self.Floquet_Hk_2(k, Ex, Ey, phi))
+        E, aux = la.eig(self.Floquet_Hk_2(k))
         idx = E.real.argsort()
         E_sort = E[idx].real
         psi = aux[:, idx]
 
         k = np.array([k_vec[0] + Dk[0], k_vec[1]], float)
-        E, aux = la.eig(self.Floquet_Hk_2(k, Ex, Ey, phi))
+        E, aux = la.eig(self.Floquet_Hk_2(k))
         idx = E.real.argsort()
         psiDx = aux[:, idx]
 
         k = np.array([k_vec[0], k_vec[1] + Dk[1]], float)
-        E, aux = la.eig(self.Floquet_Hk_2(k, Ex, Ey, phi))
+        E, aux = la.eig(self.Floquet_Hk_2(k))
         idx = E.real.argsort()
         psiDy = aux[:, idx]
 
         k = np.array([k_vec[0] + Dk[0], k_vec[1] + Dk[1]], float)
-        E, aux = la.eig(self.Floquet_Hk_2(k, Ex, Ey, phi))
+        E, aux = la.eig(self.Floquet_Hk_2(k))
         idx = E.real.argsort()
         psiDxDy = aux[:, idx]
 
@@ -605,14 +592,12 @@ class Floquet_Magnon:
         return F12, E_sort
 
 
-    def ChernN_1(self, Ex, Ey, phi, steps):
+    def ChernN_1(self, steps):
         """
         Chern number of the Floquet topological magnon bands for Case I
         
         Parameters
         ----------
-        Ex, Ey: amplitude in x and y axes
-        phi: phase angle of light
         steps = discretized steps
         
         Returns
@@ -645,7 +630,7 @@ class Floquet_Magnon:
             for iy in range(steps):
                 ky = ky_int + iy * Dy
                 k_vec = np.array([kx, ky], float)
-                LF, E_k = self.latF_1(k_vec, Ex, Ey, phi,Dk, Nd)
+                LF, E_k = self.latF_1(k_vec,Dk, Nd)
                 sumN += LF
 
                 # # save data for plotting
@@ -656,14 +641,12 @@ class Floquet_Magnon:
         return chernN
 
 
-    def ChernN_2(self, Ex, Ey, phi, steps):
+    def ChernN_2(self, steps):
         """
         Chern number of the Floquet topological magnon bands for Case II
         
         Parameters
         ----------
-        Ex, Ey: amplitude in x and y axes
-        phi: phase angle of light
         steps = discretized steps
         
         Returns
@@ -696,7 +679,7 @@ class Floquet_Magnon:
             for iy in range(steps):
                 ky = ky_int + iy * Dy
                 k_vec = np.array([kx, ky], float)
-                LF, E_k = self.latF_2(k_vec, Ex, Ey, phi, Dk, Nd)
+                LF, E_k = self.latF_2(k_vec, Dk, Nd)
                 sumN += LF
 
                 # # save data for plotting
@@ -706,15 +689,12 @@ class Floquet_Magnon:
         chernN = sumN.imag / (2 * np.pi)
         return chernN
 
-
-    def Floquet_Edge_1(self, kx, Ex, Ey, phi, N):
+    def Floquet_Edge_1(self, kx, N):
         """
         This function defines the Floquet edge states for case I.
         
         Parameters
         ----------
-        Ex, Ey: amplitude in x and y axes
-        phi: phase angle of light
         N = dimension of matrix
         
         Returns
@@ -744,10 +724,10 @@ class Floquet_Magnon:
                        [-r0, -vJc, -v0, 0], [-vJc, -r0s, 0, -v0]])
 
         # Define H1 and H-1
-        r1 = vJ * (jv(1, self.Ex) * exp(1j * phi) -
+        r1 = vJ * (jv(1, self.Ex) * exp(1j * self.phi) -
                    jv(1, Em) * exp(1j * kx) * exp(-1j * P2))
 
-        r1s = vJ * (-jv(1, self.Ex) * exp(1j * phi) +
+        r1s = vJ * (-jv(1, self.Ex) * exp(1j * self.phi) +
                     jv(1, Em) * exp(-1j * kx) * exp(-1j * P2))
 
         Hp = np.array([[0, 0, r1s, 0], [0, 0, 0, r1],
@@ -801,14 +781,12 @@ class Floquet_Magnon:
         H_tot = np.kron(c0, Floquet_H0) + np.kron(cp, Floquet_H10) + np.kron(cm, Floquet_H20)
         return H_tot
 
-    def Floquet_Edge_2(self, kx, Ex, Ey, phi, N):
+    def Floquet_Edge_2(self, kx, N):
         """
         This function defines the Floquet edge states for case II
         
         Parameters
         ----------
-        Ex, Ey: amplitude in x and y axes
-        phi: phase angle of light
         N = dimension of matrix
         
         Returns
@@ -839,10 +817,10 @@ class Floquet_Magnon:
                        [-vJc, 0, -v0, r0], [0, -vJc, r0s, -v0]])
 
         # Define H1 and H-1
-        r1 = vJ * (jv(1, self.Ex) * exp(1j * phi) -
+        r1 = vJ * (jv(1, self.Ex) * exp(1j * self.phi) -
                    jv(1, Em) * exp(1j * kx) * exp(-1j * P2))
 
-        r1s = vJ * (-jv(1, self.Ex) * exp(1j * phi) +
+        r1s = vJ * (-jv(1, self.Ex) * exp(1j * self.phi) +
                     jv(1, Em) * exp(-1j * kx) * exp(-1j * P2))
 
         Hp = np.array([[0, -r1s, 0, 0], [-r1, 0, 0, 0],
@@ -897,14 +875,12 @@ class Floquet_Magnon:
         H_tot = np.kron(c0, Floquet_H0) + np.kron(cp, Floquet_H10) + np.kron(cm, Floquet_H20)
         return H_tot
 
-    def plot_Floquet_states_1(self, Ex, Ey, phi, steps, N):
+    def plot_Floquet_states_1(self, steps, N):
         """ 
         This function plots the Floquet edge states for case I
         
         Parameters
         ----------
-        Ex, Ey: amplitude in x and y axes
-        phi: phase angle of light
         N = dimension of matrix
         steps: dicretied steps
         
@@ -916,7 +892,7 @@ class Floquet_Magnon:
         ev = zeros((steps, N * Hsize)) # Initial empty arrays
         kx = linspace(0, 1, steps)
         for ix in arange(len(kx)):
-            H = self.Floquet_Edge_1(2 * pi * kx[ix], Ex, Ey, phi, N)  # Call the Model Hamiltonian
+            H = self.Floquet_Edge_1(2 * pi * kx[ix], N)  # Call the Model Hamiltonian
             eg, ef = la.eig(H)  # Find the eigenvalues and eigenvectors
             eg = sort(real(eg))  # Sort the eigenvalues in ascending order
             ev[ix, :] = eg
@@ -925,14 +901,12 @@ class Floquet_Magnon:
         plot_x = linspace(0, 1, 4 * steps)
         plt.plot(kx, ev, 'b-', linewidth=0.7)
 
-    def plot_Floquet_states_2(self,Ex, Ey, phi, steps, N):
+    def plot_Floquet_states_2(self, steps, N):
         """ 
         This function plots the Floquet edge states for case II
         
         Parameters
         ----------
-        Ex, Ey: amplitude in x and y axes
-        phi: phase angle of light
         N = dimension of matrix
         steps: dicretied steps
         
@@ -944,7 +918,7 @@ class Floquet_Magnon:
         ev = zeros((steps, N * Hsize))  # Initial empty arrays
         kx = linspace(0, 1, steps)
         for ix in arange(len(kx)):
-            H = self.Floquet_Edge_2(2 * pi * kx[ix], Ex, Ey, phi, N) # Call the Model Hamiltonian
+            H = self.Floquet_Edge_2(2 * pi * kx[ix], N) # Call the Model Hamiltonian
             eg, ef = la.eig(H)  # Find the eigenvalues and eigenvectors
             eg = sort(real(eg))  # Sort the eigenvalues in ascending order
             ev[ix, :] = eg
