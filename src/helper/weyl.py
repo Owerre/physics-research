@@ -5,10 +5,10 @@ warnings.filterwarnings("ignore")
 # Data manipulation
 import numpy as np
 from scipy.sparse import diags
-from numpy import pi, cos, arccos
+from numpy import pi, cos, arccos,dot,imag,gradient
 from numpy import arctan, sin, exp, sqrt, kron
-from numpy import linspace, zeros, arange 
-from numpy import sort, real, matrix
+from numpy import linspace, zeros, arange,meshgrid
+from numpy import sort, real, matrix, argsort
 import matplotlib.pyplot as plt
 
 # Linear algebra
@@ -30,24 +30,23 @@ class WeylMagnon:
         self.Jc = Jc # Heisenberg Interlayer coupling
         self.h = h # Zeeman magnetic field strength
 
-    def model_hamiltonian(self,kx, ky, kz):
+    def model_hamiltonian(self,k_vec):
         """
         The model Hamiltonian for the system
 
         Parameters
         -----------
-        kx: Momentum vector along the x direction
-        ky: Momentum vector along the y direction
-        kz: Momentum vector along the z direction
+        k_vec = (kx,ky,kz): 3D momentum vector
 
         Returns
         -------
         Model Hamiltonian 
         """
         # Momentum vectors
-        k1 = (-kx - self.rr * ky) / 2
-        k2 = kx
-        k3 = (-kx + self.rr * ky) / 2
+        k1 = (k_vec[0] + self.rr * k_vec[1]) / 2
+        k2 = k_vec[0]
+        k3 = (-k_vec[0] + self.rr * k_vec[1]) / 2
+        kz = k_vec[2]
 
         # Saturation magnetic field and canted angle
         hs = 6 * self.J + 2 * self.rr * self.DM + 4 * self.Jc  
@@ -82,9 +81,109 @@ class WeylMagnon:
         sy = matrix([[0, -1j], [1j, 0]])
 
         # Model Hamiltonian
-        Hamiltonian = kron(sz, Gr) + kron(1j * sy, Go)
-        return Hamiltonian
+        Hk= kron(sz, Gr) + kron(1j * sy, Go)
+        return Hk
+    
+    def velocity_xz(self, k_vec):
+        """
+        Velocity operator in the xz direction
 
+        Parameters
+        -----------
+        k_vec = (kx,ky,kz): 3D momentum vector
+
+        Returns
+        -------
+        Velocity operator
+        """
+        # Momentum vectors
+        k1 = (k_vec[0] + self.rr * k_vec[1]) / 2
+        k2 = k_vec[0]
+        k3 = (-k_vec[0] + self.rr * k_vec[1]) / 2
+        kz = k_vec[2]
+
+        # Saturation magnetic field and canted angle
+        hs = 6 * self.J + 2 * self.rr * self.DM + 4 * self.Jc  
+        th = arccos(self.h / hs)  
+
+        # Model parameters
+        t1r = self.J * (-0.5 + 3 * 0.25 * sin(th)**2) - 0.5 * \
+            self.rr * self.DM * (1 - 0.5 * sin(th)**2)
+        t2r = -0.5 * cos(th) * (self.J * self.rr - self.DM)
+        tr = sqrt((t1r)**2 + (t2r)**2)
+
+        to = 0.25 * (3 * self.J + self.rr * self.DM) * sin(th)**2
+        trc = -self.Jc * (1 - sin(th)**2)
+        toc = self.Jc * sin(th)**2
+
+        phi = arctan(t2r / t1r)
+        
+        # Pauli matrices
+        sz = matrix([[1, 0], [0, -1]])
+        sy = matrix([[0, -1j], [1j, 0]])
+
+        # velocity operator along the x direction
+        Grx = matrix([[0, -0.5*tr * sin(k1) * exp(-1j * phi), 0.5*tr * sin(k3) * exp(1j * phi)],
+                     [-0.5*tr * sin(k1) * exp(1j * phi), 0, -tr *sin(k2) * exp(-1j * phi)],
+                     [0.5*tr * sin(k3) * exp(-1j * phi), -tr * sin(k2) * exp(1j * phi), 0]]
+                    )
+
+        Gox = matrix([[0, -0.5*to * sin(k1), 0.5*to * sin(k3)],
+                     [-0.5*to * sin(k1), 0, -to * sin(k2)],
+                     [0.5*to * sin(k3), -to * sin(k2), 0]]
+                    )
+
+        # velocity operator along the z direction
+        Grz = matrix([[ -trc * sin(kz),0,0],
+                     [0,  -trc * sin(kz), 0],
+                     [0, 0,  -trc * sin(kz)]]
+                   )
+
+        Goz = matrix([[-toc * sin(kz), 0, 0],
+                     [0, -toc * sin(kz), 0],
+                     [0, 0, -toc * sin(kz)]]
+                   )
+        
+        # 6x6 matrices of velocity operators
+        vx = kron(sz, Grx) + kron(1j * sy, Gox) 
+        vz = kron(sz, Grz) + kron(1j * sy, Goz) 
+        return vx, vz
+     
+    def berry_curvature_kxkz(self, kx, ky, kz):
+        """
+        Berry curvature along the xz direction
+
+        Parameters
+        -----------
+        (kx,ky,kz): 3D momentum vector
+
+        Returns
+        -------
+        Berry curvature of the each magnon band
+        """
+        for k in arange(len(kx)):
+            for l in arange(len(kz)):
+                k_vec = np.array([kx[k], ky, kz[l]], float)
+                Hk = self.model_hamiltonian(k_vec) # Call the Hamiltonian function
+                vel = self.velocity_xz(k_vec) # Call the Velocity_Operator function
+                eg, ef= la.eig(Hk) # Find the eigenvalues "eg" and eigenvectors "ef"
+                idx = argsort(real(eg)) # The original index of the sorted eigenvalues
+                eg = np.sort(real(eg)) # Sort the eigenvalues in ascending order
+                Ene[k,l,:] = eg[:]
+                eigV = ef[:,idx]
+
+                # Compute the Berry Curvature
+                for n in arange(Hsize):
+                    vxvy = zeros((1,Hsize),dtype=complex)
+                    for ns in arange(Hsize):
+                        if ns != n:
+                            a0 = dot(eigV[:,n].getH(),vel[0]) # .getH() denote complex conjugation
+                            a1 = dot(eigV[:,ns].getH(),vel[1])
+                            val = (dot(a0,eigV[:,ns])*dot(a1,eigV[:,n]))/(eg[n] - eg[ns])**2
+                            vxvy[:,n] = vxvy[:,n] + val[:,0]  
+                    Omega[k,l,n] = -2*imag(vxvy[:,n])
+        return Omega[:,:,3], Omega[:,:,4], Omega[:,:,5]
+    
     def plot_weyl_bands(self, steps):
         """
         Plot of eigenvalues of the model Hamiltonian along the ky = 0 plane
@@ -111,7 +210,8 @@ class WeylMagnon:
         # Hamiltonian diagonalization
         for ix in arange(len(kx)):
             kz = 0
-            H = self.model_hamiltonian(kx[ix], ky, kz) # Call the Model Hamiltonian
+            k_vec = np.array([kx[ix], ky, kz], float)
+            H = self.model_hamiltonian(k_vec) # Call the Model Hamiltonian
             eg, ef = la.eig(H)  # Find the eigenvalues and eigenvectors
             eg = sort(real(eg))  # Sort the eigenvalues in ascending order
             for i in arange(Hsize):
@@ -120,7 +220,8 @@ class WeylMagnon:
         kz = linspace(0, pi, steps)
         for iz in arange(len(kz)):
             kx = 2 * pi / 3
-            H = self.model_hamiltonian(kx, ky, kz[iz]) # Call the Model Hamiltonian
+            k_vec = np.array([kx, ky, kz[iz]], float)
+            H = self.model_hamiltonian(k_vec) # Call the Model Hamiltonian
             eg, ef = la.eig(H)  # Find the eigenvalues and eigenvectors
             eg = sort(real(eg))  # Sort the eigenvalues in ascending order
 
@@ -131,9 +232,9 @@ class WeylMagnon:
 
         # Hamiltonian diagonalization
         for ix in arange(len(kx1)):
-
             kz = pi
-            H = self.model_hamiltonian(kx1[ix], ky, kz) # Call the Model Hamiltonian
+            k_vec = np.array([kx1[ix], ky, kz], float)
+            H = self.model_hamiltonian(k_vec) # Call the Model Hamiltonian
             eg, ef = la.eig(H)  # Find the eigenvalues and eigenvectors
             eg = sort(real(eg))  # Sort the eigenvalues in ascending order
 
@@ -143,7 +244,8 @@ class WeylMagnon:
         kz1 = linspace(pi, 0, steps)
         for iz in arange(len(kz1)):
             kx = 0
-            H = self.model_hamiltonian(kx, ky, kz1[iz]) # Call the Model Hamiltonian
+            k_vec = np.array([kx, ky, kz1[iz]], float)
+            H = self.model_hamiltonian(k_vec) # Call the Model Hamiltonian
             eg, ef = la.eig(H)  # Find the eigenvalues and eigenvectors
             eg = sort(real(eg))  # Sort the eigenvalues in ascending order
 
@@ -181,8 +283,7 @@ class WeylMagnon:
         Tridiagonal matrix of size 6N x 6N.
         """
 
-        hs = 6 * self.J + 2 * self.rr * self.DM + \
-            4 * self.Jc  # Saturation magnetic field
+        hs = 6 * self.J + 2 * self.rr * self.DM + 4 * self.Jc  # Saturation magnetic field
         th = arccos(self.h / hs)  # Canting angle induced by magnetic field
 
         # Parameters
@@ -322,3 +423,74 @@ class WeylMagnon:
             plt.text(0.95, -0.18, r'$(0,0)$')
             plt.axis([-0.005, 1.005, 0, 2.5])
             plt.xticks([])
+            
+    def build_U(self, vec1, vec2):
+        """ 
+        This function calculates the inner product of two eigenvectors divided by the norm:
+        U = <psi|psi+mu>/|<psi|psi+mu>|
+        
+        Parameters
+        ----------
+        vec 1&2: vectors 1 and 2
+        
+        Returns
+        -------
+        Inner product of vec 1&2
+        """
+        in_product = np.dot(vec1, vec2.conj())
+        U = in_product / np.abs(in_product)
+        return U
+
+    def latF(self, k_vec, Dk, dim):
+        """ 
+        This function calulates the lattice field for Case I using the definition:
+        
+        F12 = ln[ U1 * U2(k+1) * U1(k_2)^-1 * U2(k)^-1 ]
+        
+        For each k=(kx,ky,kz) point, four U must be calculated. 
+        The lattice field has the same dimension of number of energy bands.
+        
+        Parameters
+        ----------
+        k_vec = (kx,ky,kz): 3D momentum vector
+        Dk = (Dkx,Dky,Dkz): 3D step vector
+        dim: dimension of H(k)
+        
+        Returns
+        -------
+        lattice field corresponding to each band as an n-dimensional vector
+        """
+        ka = k_vec
+        E, aux = la.eig(self.model_hamiltonian(ka))
+        idx = E.real.argsort()
+        E_sort = E[idx].real
+        psi = aux[:, idx]
+
+        kb = np.array([k_vec[0] + Dk[0], k_vec[1], k_vec[2]], float)
+        E, aux = la.eig(self.model_hamiltonian(kb))
+        idx = E.real.argsort()
+        psiDx = aux[:, idx]
+
+        kc = np.array([k_vec[0], k_vec[1] + Dk[1], k_vec[2]], float)
+        E, aux = la.eig(self.model_hamiltonian(kc))
+        idx = E.real.argsort()
+        psiDy = aux[:, idx]
+
+        kd = np.array([k_vec[0] + Dk[0], k_vec[1] + Dk[1], k_vec[2]], float)
+        E, aux = la.eig(self.model_hamiltonian(kd))
+        idx = E.real.argsort()
+        psiDxDy = aux[:, idx]
+
+        U1x = np.zeros((dim), dtype=complex)
+        U2y = np.zeros((dim), dtype=complex)
+        U1y = np.zeros((dim), dtype=complex)
+        U2x = np.zeros((dim), dtype=complex)
+
+        for i in range(dim):
+            U1x[i] = self.build_U(psi[:, i], psiDx[:, i])
+            U2y[i] = self.build_U(psi[:, i], psiDy[:, i])
+            U1y[i] = self.build_U(psiDy[:, i], psiDxDy[:, i])
+            U2x[i] = self.build_U(psiDx[:, i], psiDxDy[:, i])
+        F12 = np.zeros((dim), dtype=complex)
+        F12 = np.log(U1x * U2x * 1. / U1y * 1. / U2y)
+        return F12, E_sort
