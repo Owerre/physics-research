@@ -99,7 +99,7 @@ class Floquet_ChernN:
         -------
         Inner product of vec 1&2
         """
-        in_product = np.dot(vec1, vec2.conj())
+        in_product = np.dot(vec2.getH(), vec1)
         U = in_product / np.abs(in_product)
         return U
 
@@ -151,7 +151,6 @@ class Floquet_ChernN:
         U2y = np.zeros((dim), dtype=complex)
         U1y = np.zeros((dim), dtype=complex)
         U2x = np.zeros((dim), dtype=complex)
-
         for i in range(dim):
             U1x[i] = self.build_U(psi[:, i], psiDx[:, i])
             U2y[i] = self.build_U(psi[:, i], psiDy[:, i])

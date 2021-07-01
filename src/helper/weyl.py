@@ -165,7 +165,7 @@ class WeylMagnon:
             for l in arange(len(kz)):
                 k_vec = np.array([kx[k], ky, kz[l]], float)
                 Hk = self.model_hamiltonian(k_vec) # Call the Hamiltonian function
-                vel = self.velocity_xz(k_vec) # Call the Velocity_Operator function
+                vel = self.velocity_xz(k_vec) # Call the velocity operator function
                 eg, ef= la.eig(Hk) # Find the eigenvalues "eg" and eigenvectors "ef"
                 idx = argsort(real(eg)) # The original index of the sorted eigenvalues
                 eg = np.sort(real(eg)) # Sort the eigenvalues in ascending order
@@ -180,7 +180,7 @@ class WeylMagnon:
                             a0 = dot(eigV[:,n].getH(),vel[0]) # .getH() denote complex conjugation
                             a1 = dot(eigV[:,ns].getH(),vel[1])
                             val = (dot(a0,eigV[:,ns])*dot(a1,eigV[:,n]))/(eg[n] - eg[ns])**2
-                            vxvy[:,n] = vxvy[:,n] + val[:,0]  
+                            vxvy[:,n] = vxvy[:,n] + val[0]  
                     Omega[k,l,n] = -2*imag(vxvy[:,n])
         return Omega[:,:,3], Omega[:,:,4], Omega[:,:,5]
     
@@ -437,23 +437,23 @@ class WeylMagnon:
         -------
         Inner product of vec 1&2
         """
-        in_product = np.dot(vec1, vec2.conj())
+        in_product = np.dot(vec2.getH(), vec1)
         U = in_product / np.abs(in_product)
         return U
 
-    def latF(self, k_vec, Dk, dim):
+    def latF_xy(self, k_vec, Dk, dim):
         """ 
-        This function calulates the lattice field for Case I using the definition:
+        This function calulates the lattice field in the xy direction using the definition:
         
         F12 = ln[ U1 * U2(k+1) * U1(k_2)^-1 * U2(k)^-1 ]
         
-        For each k=(kx,ky,kz) point, four U must be calculated. 
-        The lattice field has the same dimension of number of energy bands.
+        For each k=(k1,k2,kz) point, four U must be calculated. The lattice field has the same 
+        dimension of number of energy bands.
         
         Parameters
         ----------
-        k_vec = (kx,ky,kz): 3D momentum vector
-        Dk = (Dkx,Dky,Dkz): 3D step vector
+        k_vec = (k1,k2,kz): 3D momentum vector
+        Dk = (Dk1,Dk2,Dkz): 3D step vector
         dim: dimension of H(k)
         
         Returns
@@ -461,23 +461,23 @@ class WeylMagnon:
         lattice field corresponding to each band as an n-dimensional vector
         """
         ka = k_vec
-        E, aux = la.eig(self.model_hamiltonian(ka))
+        E, aux = la.eig(self.hamiltonian(ka))
         idx = E.real.argsort()
         E_sort = E[idx].real
         psi = aux[:, idx]
 
         kb = np.array([k_vec[0] + Dk[0], k_vec[1], k_vec[2]], float)
-        E, aux = la.eig(self.model_hamiltonian(kb))
+        E, aux = la.eig(self.hamiltonian(kb))
         idx = E.real.argsort()
         psiDx = aux[:, idx]
 
         kc = np.array([k_vec[0], k_vec[1] + Dk[1], k_vec[2]], float)
-        E, aux = la.eig(self.model_hamiltonian(kc))
+        E, aux = la.eig(self.hamiltonian(kc))
         idx = E.real.argsort()
         psiDy = aux[:, idx]
 
         kd = np.array([k_vec[0] + Dk[0], k_vec[1] + Dk[1], k_vec[2]], float)
-        E, aux = la.eig(self.model_hamiltonian(kd))
+        E, aux = la.eig(self.hamiltonian(kd))
         idx = E.real.argsort()
         psiDxDy = aux[:, idx]
 
@@ -485,12 +485,67 @@ class WeylMagnon:
         U2y = np.zeros((dim), dtype=complex)
         U1y = np.zeros((dim), dtype=complex)
         U2x = np.zeros((dim), dtype=complex)
-
         for i in range(dim):
-            U1x[i] = self.build_U(psi[:, i], psiDx[:, i])
-            U2y[i] = self.build_U(psi[:, i], psiDy[:, i])
-            U1y[i] = self.build_U(psiDy[:, i], psiDxDy[:, i])
-            U2x[i] = self.build_U(psiDx[:, i], psiDxDy[:, i])
+            U1x[i] = self.build_U(psiDx[:, i], psi[:, i])
+            U2y[i] = self.build_U(psiDy[:, i], psi[:, i])
+            U1y[i] = self.build_U(psiDxDy[:, i], psiDy[:, i])
+            U2x[i] = self.build_U(psiDxDy[:, i], psiDx[:, i])
         F12 = np.zeros((dim), dtype=complex)
         F12 = np.log(U1x * U2x * 1. / U1y * 1. / U2y)
-        return F12, E_sort
+        return F12
+    
+    def hamiltonian(self,k_vec):
+        """
+        The model Hamiltonian for the system
+
+        Parameters
+        -----------
+        k_vec =(k1,k2,kz): 3D momentum vector
+        where k1 = (kx +sqrt(3)ky)/2, k2 = kx, kz = kz
+        
+
+        Returns
+        -------
+        Model Hamiltonian 
+        """
+        # Momentum vectors
+        k1 =  k_vec[1]
+        k2 = k_vec[0]
+        k3 = (k_vec[1] - k_vec[0])
+        kz = k_vec[2]
+
+        # Saturation magnetic field and canted angle
+        hs = 6 * self.J + 2 * self.rr * self.DM + 4 * self.Jc  
+        th = arccos(self.h / hs)  
+
+        # Model parameters
+        t1r = self.J * (-0.5 + 3 * 0.25 * sin(th)**2) - 0.5 * \
+            self.rr * self.DM * (1 - 0.5 * sin(th)**2)
+        t2r = -0.5 * cos(th) * (self.J * self.rr - self.DM)
+        tr = sqrt((t1r)**2 + (t2r)**2)
+
+        to = 0.25 * (3 * self.J + self.rr * self.DM) * sin(th)**2
+        trc = -self.Jc * (1 - sin(th)**2)
+        toc = self.Jc * sin(th)**2
+
+        phi = arctan(t2r / t1r)
+
+        # Create a 6 x 6 Hamiltonian
+        G0 = self.rr * self.DM + self.J + self.Jc + trc * cos(kz)
+
+        Gr = matrix([[G0, tr * cos(k1) * exp(-1j * phi), tr * cos(k3) * exp(1j * phi)],
+                     [tr * cos(k1) * exp(1j * phi), G0, tr *
+                      cos(k2) * exp(-1j * phi)],
+                     [tr * cos(k3) * exp(-1j * phi), tr * cos(k2) * exp(1j * phi), G0]])
+
+        Go = matrix([[toc * cos(kz), to * cos(k1), to * cos(k3)],
+                     [to * cos(k1), toc * cos(kz), to * cos(k2)],
+                     [to * cos(k3), to * cos(k2), toc * cos(kz)]])
+
+        # Pauli matrices
+        sz = matrix([[1, 0], [0, -1]])
+        sy = matrix([[0, -1j], [1j, 0]])
+
+        # Model Hamiltonian
+        Hk= kron(sz, Gr) + kron(1j * sy, Go)
+        return Hk
