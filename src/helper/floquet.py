@@ -16,10 +16,12 @@ from numpy import linalg as la
 # Bessel function
 from scipy.special import jv
 
-class Floquet_Magnon:
+class FloquetQSHI:
     """ 
-    Class for analysing bilayer honeycomb antiferromagnets coupled
-    antiferromagnetically (case I) and ferromagnetically (case II)
+    Class for analysing bilayer honeycomb antiferromagnets for two cases:
+    
+    Case I - Antiferromagnetically  coupled layers
+    Case II - Ferromagnetically coupled layers
     """
     def __init__(self, Ex, Ey, omega, phi, Jc):
         """
@@ -34,10 +36,9 @@ class Floquet_Magnon:
         self.S = 1  # Spin value
         self.rr = sqrt(3)
 
-    def Undriven_Hamiltonian_1(self, k_vec):
+    def undriven_Hk1(self, k_vec):
         """
-        Static undriven Hamiltonian for the  bilayer honeycomb antiferromagnet 
-        coupled antiferromagnetically (case I)
+        Static undriven Hamiltonian for case I
         
         Paramters
         ---------
@@ -65,10 +66,9 @@ class Floquet_Magnon:
                     [-vJ * f_k, -vJc, -v0, 0], [-vJc, -vJ * f_ks, 0, -v0]])
         return H
 
-    def Undriven_Hamiltonian_2(self, k_vec):
+    def undriven_Hk2(self, k_vec):
         """
-        Static undriven Hamiltonian for the  bilayer honeycomb antiferromagnet 
-        coupled ferromagnetically (case II) 
+        Static undriven Hamiltonian for case II
         
         Paramters
         ---------
@@ -115,7 +115,7 @@ class Floquet_Magnon:
         for ix in arange(len(kx)):
             ky = -self.rr * kx[ix] / 3
             k_vec = np.array([kx[ix], ky], float)
-            H = self.Undriven_Hamiltonian_1(k_vec)  # Call the Model Hamiltonian
+            H = self.undriven_Hk1(k_vec)  # Call the Model Hamiltonian
             eg, ef = la.eig(H)  # Find the eigenvalues and eigenvectors
             eg = sort(real(eg))  # Sort the eigenvalues in ascending order
 
@@ -127,7 +127,7 @@ class Floquet_Magnon:
 
             ky = self.rr * kx[ix]
             k_vec = np.array([kx[ix], ky], float)
-            H = self.Undriven_Hamiltonian_1(k_vec)  # Call the Model Hamiltonian
+            H = self.undriven_Hk1(k_vec)  # Call the Model Hamiltonian
             eg, ef = la.eig(H)  # Find the eigenvalues and eigenvectors
             eg = sort(real(eg))  # Sort the eigenvalues in ascending order
 
@@ -138,7 +138,7 @@ class Floquet_Magnon:
         for ix in arange(len(kx)):
             ky = self.rr * kx[ix]
             k_vec = np.array([kx[ix], ky], float)
-            H = self.Undriven_Hamiltonian_1(k_vec)  # Call the Model Hamiltonian
+            H = self.undriven_Hk1(k_vec)  # Call the Model Hamiltonian
             eg, ef = la.eig(H)  # Find the eigenvalues and eigenvectors
             eg = sort(real(eg))  # Sort the eigenvalues in ascending order
 
@@ -178,7 +178,7 @@ class Floquet_Magnon:
 
             ky = -self.rr * kx[ix] / 3
             k_vec = np.array([kx[ix], ky], float)
-            H = self.Undriven_Hamiltonian_2(k_vec)  # Call the Model Hamiltonian
+            H = self.undriven_Hk2(k_vec)  # Call the Model Hamiltonian
             eg, ef = la.eig(H)  # Find the eigenvalues and eigenvectors
             eg = sort(real(eg))  # Sort the eigenvalues in ascending order
 
@@ -189,7 +189,7 @@ class Floquet_Magnon:
         for ix in arange(len(kx)):
             ky = self.rr * kx[ix]
             k_vec = np.array([kx[ix], ky], float)
-            H = self.Undriven_Hamiltonian_2(k_vec)  # Call the Model Hamiltonian
+            H = self.undriven_Hk2(k_vec)  # Call the Model Hamiltonian
             eg, ef = la.eig(H)  # Find the eigenvalues and eigenvectors
             eg = sort(real(eg))  # Sort the eigenvalues in ascending order
 
@@ -200,7 +200,7 @@ class Floquet_Magnon:
         for ix in arange(len(kx)):
             ky = self.rr * kx[ix]
             k_vec = np.array([kx[ix], ky], float)
-            H = self.Undriven_Hamiltonian_2(k_vec)  # Call the Model Hamiltonian
+            H = self.undriven_Hk2(k_vec)  # Call the Model Hamiltonian
             eg, ef = la.eig(H)  # Find the eigenvalues and eigenvectors
             eg = sort(real(eg))  # Sort the eigenvalues in ascending order
 
@@ -221,7 +221,7 @@ class Floquet_Magnon:
             plt.axis([-0.005, 1.005, 0, 7])
             plt.xticks([])
 
-    def Floquet_Hk_1(self, k_vec):
+    def Floquet_Hk1(self, k_vec):
         """
         High frequency limit of the Floquet Hamiltonian for case I.
         
@@ -273,7 +273,7 @@ class Floquet_Magnon:
         Floquet_H = H0 - (1 / self.omega) * (com1 - com2 + com3)
         return Floquet_H
 
-    def Floquet_Hk_2(self, k_vec):
+    def Floquet_Hk2(self, k_vec):
         """
         High frequency limit of the Floquet Hamiltonian for case II.
         
@@ -352,7 +352,7 @@ class Floquet_Magnon:
         for ix in arange(len(kx)):
             ky = -self.rr * kx[ix] / 3
             k_vec = np.array([kx[ix], ky], float)
-            H = self.Floquet_Hk_1(k_vec) # Call the Model Hamiltonian
+            H = self.Floquet_Hk1(k_vec) # Call the Model Hamiltonian
             eg, ef = la.eig(H)  # Find the eigenvalues and eigenvectors
             eg = sort(real(eg))  # Sort the eigenvalues in ascending order
 
@@ -363,7 +363,7 @@ class Floquet_Magnon:
         for ix in arange(len(kx)):
             ky = self.rr * kx[ix]
             k_vec = np.array([kx[ix], ky], float)
-            H = self.Floquet_Hk_1(k_vec) # Call the Model Hamiltonian
+            H = self.Floquet_Hk1(k_vec) # Call the Model Hamiltonian
             eg, ef = la.eig(H)  # Find the eigenvalues and eigenvectors
             eg = sort(real(eg))  # Sort the eigenvalues in ascending order
 
@@ -374,7 +374,7 @@ class Floquet_Magnon:
         for ix in arange(len(kx)):
             ky = self.rr * kx[ix]
             k_vec = np.array([kx[ix], ky], float)
-            H = self.Floquet_Hk_1(k_vec)  # Call the Model Hamiltonian
+            H = self.Floquet_Hk1(k_vec)  # Call the Model Hamiltonian
             eg, ef = la.eig(H)  # Find the eigenvalues and eigenvectors
             eg = sort(real(eg))  # Sort the eigenvalues in ascending order
 
@@ -420,7 +420,7 @@ class Floquet_Magnon:
         for ix in arange(len(kx)):
             ky = -self.rr * kx[ix] / 3
             k_vec = np.array([kx[ix], ky], float)
-            H = self.Floquet_Hk_2(k_vec) # Call the Model Hamiltonian
+            H = self.Floquet_Hk2(k_vec) # Call the Model Hamiltonian
             eg, ef = la.eig(H)  # Find the eigenvalues and eigenvectors
             eg = sort(real(eg))  # Sort the eigenvalues in ascending order
 
@@ -431,7 +431,7 @@ class Floquet_Magnon:
         for ix in arange(len(kx)):
             ky = self.rr * kx[ix]
             k_vec = np.array([kx[ix], ky], float)
-            H = self.Floquet_Hk_2(k_vec) # Call the Model Hamiltonian
+            H = self.Floquet_Hk2(k_vec) # Call the Model Hamiltonian
             eg, ef = la.eig(H)  # Find the eigenvalues and eigenvectors
             eg = sort(real(eg))  # Sort the eigenvalues in ascending order
 
@@ -442,7 +442,7 @@ class Floquet_Magnon:
         for ix in arange(len(kx)):
             ky = self.rr * kx[ix]
             k_vec = np.array([kx[ix], ky], float)
-            H = self.Floquet_Hk_2(k_vec) # Call the Model Hamiltonian
+            H = self.Floquet_Hk2(k_vec) # Call the Model Hamiltonian
             eg, ef = la.eig(H)  # Find the eigenvalues and eigenvectors
             eg = sort(real(eg))  # Sort the eigenvalues in ascending order
 
@@ -486,7 +486,6 @@ class Floquet_Magnon:
         
         F12 = ln[ U1 * U2(k+1) * U1(k_2)^-1 * U2(k)^-1 ]
         
-        For each k=(kx,ky) point, four U must be calculated. 
         The lattice field has the same dimension of number of energy bands.
         
         Parameters
@@ -500,23 +499,23 @@ class Floquet_Magnon:
         lattice field corresponding to each band as an n-dimensional vector
         """
         k = k_vec
-        E, aux = la.eig(self.Floquet_Hk_1(k))
+        E, aux = la.eig(self.Floquet_Hk1(k))
         idx = E.real.argsort()
         E_sort = E[idx].real
         psi = aux[:, idx]
 
         k = np.array([k_vec[0] + Dk[0], k_vec[1]], float)
-        E, aux = la.eig(self.Floquet_Hk_1(k))
+        E, aux = la.eig(self.Floquet_Hk1(k))
         idx = E.real.argsort()
         psiDx = aux[:, idx]
 
         k = np.array([k_vec[0], k_vec[1] + Dk[1]], float)
-        E, aux = la.eig(self.Floquet_Hk_1(k))
+        E, aux = la.eig(self.Floquet_Hk1(k))
         idx = E.real.argsort()
         psiDy = aux[:, idx]
 
         k = np.array([k_vec[0] + Dk[0], k_vec[1] + Dk[1]], float)
-        E, aux = la.eig(self.Floquet_Hk_1(k))
+        E, aux = la.eig(self.Floquet_Hk1(k))
         idx = E.real.argsort()
         psiDxDy = aux[:, idx]
 
@@ -542,7 +541,6 @@ class Floquet_Magnon:
         
         F12 = ln[ U1 * U2(k+1) * U1(k_2)^-1 * U2(k)^-1 ]
         
-        For each k=(kx,ky) point, four U must be calculated. 
         The lattice field has the same dimension of number of energy bands.
         
         Parameters
@@ -557,23 +555,23 @@ class Floquet_Magnon:
         """
         # Here we calculate the band structure and sort them from low to high eigenenergies
         k = k_vec
-        E, aux = la.eig(self.Floquet_Hk_2(k))
+        E, aux = la.eig(self.Floquet_Hk2(k))
         idx = E.real.argsort()
         E_sort = E[idx].real
         psi = aux[:, idx]
 
         k = np.array([k_vec[0] + Dk[0], k_vec[1]], float)
-        E, aux = la.eig(self.Floquet_Hk_2(k))
+        E, aux = la.eig(self.Floquet_Hk2(k))
         idx = E.real.argsort()
         psiDx = aux[:, idx]
 
         k = np.array([k_vec[0], k_vec[1] + Dk[1]], float)
-        E, aux = la.eig(self.Floquet_Hk_2(k))
+        E, aux = la.eig(self.Floquet_Hk2(k))
         idx = E.real.argsort()
         psiDy = aux[:, idx]
 
         k = np.array([k_vec[0] + Dk[0], k_vec[1] + Dk[1]], float)
-        E, aux = la.eig(self.Floquet_Hk_2(k))
+        E, aux = la.eig(self.Floquet_Hk2(k))
         idx = E.real.argsort()
         psiDxDy = aux[:, idx]
 
@@ -689,7 +687,7 @@ class Floquet_Magnon:
         chernN = sumN.imag / (2 * np.pi)
         return chernN
 
-    def Floquet_Edge_1(self, kx, N):
+    def Floquet_edge1(self, kx, N):
         """
         This function defines the Floquet edge states for case I.
         
@@ -781,7 +779,7 @@ class Floquet_Magnon:
         H_tot = np.kron(c0, Floquet_H0) + np.kron(cp, Floquet_H10) + np.kron(cm, Floquet_H20)
         return H_tot
 
-    def Floquet_Edge_2(self, kx, N):
+    def Floquet_edge2(self, kx, N):
         """
         This function defines the Floquet edge states for case II
         
@@ -892,7 +890,7 @@ class Floquet_Magnon:
         ev = zeros((steps, N * Hsize)) # Initial empty arrays
         kx = linspace(0, 1, steps)
         for ix in arange(len(kx)):
-            H = self.Floquet_Edge_1(2 * pi * kx[ix], N)  # Call the Model Hamiltonian
+            H = self.Floquet_edge1(2 * pi * kx[ix], N)  # Call the Model Hamiltonian
             eg, ef = la.eig(H)  # Find the eigenvalues and eigenvectors
             eg = sort(real(eg))  # Sort the eigenvalues in ascending order
             ev[ix, :] = eg
@@ -918,7 +916,7 @@ class Floquet_Magnon:
         ev = zeros((steps, N * Hsize))  # Initial empty arrays
         kx = linspace(0, 1, steps)
         for ix in arange(len(kx)):
-            H = self.Floquet_Edge_2(2 * pi * kx[ix], N) # Call the Model Hamiltonian
+            H = self.Floquet_edge2(2 * pi * kx[ix], N) # Call the Model Hamiltonian
             eg, ef = la.eig(H)  # Find the eigenvalues and eigenvectors
             eg = sort(real(eg))  # Sort the eigenvalues in ascending order
             ev[ix, :] = eg

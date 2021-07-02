@@ -186,7 +186,7 @@ class WeylMagnon:
     
     def plot_weyl_bands(self, steps):
         """
-        Plot of eigenvalues of the model Hamiltonian along the ky = 0 plane
+        Plot of eigenvalues of the Hamiltonian along the ky = 0 plane
 
         Parameters
         ----------
@@ -252,7 +252,7 @@ class WeylMagnon:
             for i in arange(Hsize):
                 ev4[i][iz] = eg[i]
 
-        # Plotting
+        # plotting
         plot_x = linspace(0, 1, 4 * steps)
         for i in arange(Hsize):
             y_combined = np.concatenate((ev1[i, :], ev2[i, :], ev3[i, :], ev4[i, :]))
@@ -276,7 +276,7 @@ class WeylMagnon:
         ----------
         kx: Momentum vector along the x direction
         kz: Momentum vector along the z direction
-        N: Number of discretize steps
+        N: Matrix size
 
         Returns
         -------
@@ -287,8 +287,7 @@ class WeylMagnon:
         th = arccos(self.h / hs)  # Canting angle induced by magnetic field
 
         # Parameters
-        t1r = self.J * (-0.5 + 3 * 0.25 * sin(th)**2) - 0.5 * \
-            self.rr * self.DM * (1 - 0.5 * sin(th)**2)
+        t1r = self.J * (-0.5 + 3 * 0.25 * sin(th)**2) - 0.5 * self.rr * self.DM * (1 - 0.5 * sin(th)**2)
         t2r = -0.5 * cos(th) * (self.J * self.rr - self.DM)
         tr = sqrt((t1r)**2 + (t2r)**2)
 
@@ -302,17 +301,17 @@ class WeylMagnon:
         G0 = self.rr * self.DM + self.J + self.Jc + trc * cos(kz)
 
         A11 = matrix([[G0, 0.5 * tr * exp(-1j * kx / 4) * exp(1j * phi),
-         0.5 * tr * exp(1j * kx / 4) * exp(-1j * phi)],
+                       0.5 * tr * exp(1j * kx / 4) * exp(-1j * phi)],
                       [0.5 * tr * exp(1j * kx / 4) * exp(-1j * phi),
                        G0, tr * cos(kx / 2) * exp(1j * phi)],
                       [0.5 * tr * exp(-1j * kx / 4) * exp(1j * phi),
-                       tr * cos(kx / 2) * exp(-1j * phi), G0]])
+                       tr * cos(kx / 2) * exp(-1j * phi), G0]]
+                    )
 
-        A21 = matrix([[toc * cos(kz), 0.5 * to * exp(-1j * kx / 4),
-         0.5 * to * exp(1j * kx / 4)],
-                      [0.5 * to * exp(1j * kx / 4), toc *
-                       cos(kz), to * cos(kx / 2)],
-                      [0.5 * to * exp(-1j * kx / 4), to * cos(kx / 2), toc * cos(kz)]])
+        A21 = matrix([[toc * cos(kz), 0.5 * to * exp(-1j * kx / 4),0.5 * to * exp(1j * kx / 4)],
+                      [0.5 * to * exp(1j * kx / 4), toc * cos(kz), to * cos(kx / 2)],
+                      [0.5 * to * exp(-1j * kx / 4), to * cos(kx / 2), toc * cos(kz)]]
+                    )
 
         # Pauli matrices
         sz = matrix([[1, 0], [0, -1]])
@@ -322,25 +321,28 @@ class WeylMagnon:
         H0 = kron(sz, A11) + kron(1j * sy, A21)
 
         B11 = matrix([[0, 0.5 * tr * exp(1j * kx / 4) * exp(1j * phi),
-         0.5 * tr * exp(-1j * kx / 4) * exp(-1j * phi)],
-                      [0, 0, 0], [0, 0, 0]])
+                       0.5 * tr * exp(-1j * kx / 4) * exp(-1j * phi)],
+                      [0, 0, 0], [0, 0, 0]]
+                    )
 
         B21 = matrix([[0, 0.5 * to * exp(1j * kx / 4), 0.5 * to * exp(-1j * kx / 4)],
-                      [0, 0, 0], [0, 0, 0]])
+                      [0, 0, 0], [0, 0, 0]]
+                    )
 
         # Off-Diagonal component of the tridiagonal Hamiltonian
         Hp = kron(sz, B11) + kron(1j * sy, B21)
 
-        C11 = matrix([[0, 0, 0], [0.5 * tr * exp(-1j * kx / 4) * exp(-1j * phi),
-                                  0, 0], [0.5 * tr * exp(1j * kx / 4) * exp(1j * phi), 0, 0]])
+        C11 = matrix([[0, 0, 0], [0.5 * tr * exp(-1j * kx / 4) * exp(-1j * phi),0, 0], 
+                      [0.5 * tr * exp(1j * kx / 4) * exp(1j * phi), 0, 0]])
 
-        C21 = matrix([[0, 0, 0], [0.5 * to * exp(-1j * kx / 4),
-                                  0, 0], [0.5 * to * exp(1j * kx / 4), 0, 0]])
+        C21 = matrix([[0, 0, 0], [0.5 * to * exp(-1j * kx / 4), 0, 0], 
+                      [0.5 * to * exp(1j * kx / 4), 0, 0]]
+                    )
 
         # Off-Diagonal component of the tridiagonal Hamiltonian
         Hm = kron(sz, C11) + kron(1j * sy, C21)
 
-        # Componenets of the tridiagonal matrices
+        # Components of the tridiagonal matrices
         r0 = diags(np.ones(N), 0).toarray()
         rp = diags(np.ones(N - 1), 1).toarray()
         rm = diags(np.ones(N - 1), -1).toarray()
@@ -356,7 +358,7 @@ class WeylMagnon:
         Parameters
         ----------
         steps: Discretize steps
-        N: Number of discretize steps
+        N: Matrix size
 
         Returns
         -------
@@ -379,32 +381,30 @@ class WeylMagnon:
             for i in arange(N * Hsize):
                 e1[i, ix] = eg[i]
 
-        kz1 = linspace(0, 2 * pi, steps)
-        for iz in arange(len(kz1)):
-            kx1 = 4 * pi / 3
-            H1 = self.weyl_surface_states_kxkz(kx1, kz1[iz], N) # Call the Model Hamiltonian  
-            eg, ef = la.eig(H1)  # Find the eigenvalues and eigenvectors
+        kz = linspace(0, 2 * pi, steps)
+        for iz in arange(len(kz)):
+            kx = 4 * pi / 3
+            H = self.weyl_surface_states_kxkz(kx, kz[iz], N) # Call the Model Hamiltonian  
+            eg, ef = la.eig(H)  # Find the eigenvalues and eigenvectors
             eg = sort(real(eg))  # Sort the eigenvalues in ascending order
-
             for i in arange(N * Hsize):
                 e2[i, iz] = eg[i]
 
-        kx2 = linspace(4 * pi / 3, 0, steps)
-        for ix in arange(len(kx2)):
-            kz2 = 2 * pi
-            H2 = self.weyl_surface_states_kxkz(kx2[ix], kz2, N) # Call the Model Hamiltonian
-            eg, ef = la.eig(H2)  # Find the eigenvalues and eigenvectors
+        kx = linspace(4 * pi / 3, 0, steps)
+        for ix in arange(len(kx)):
+            kz = 2 * pi
+            H = self.weyl_surface_states_kxkz(kx[ix], kz, N) # Call the Model Hamiltonian
+            eg, ef = la.eig(H)  # Find the eigenvalues and eigenvectors
             eg = sort(real(eg))  # Sort the eigenvalues in ascending order
             for i in arange(N * Hsize):
                 e3[i, ix] = eg[i]
 
-        kz3 = linspace(2 * pi, 0, steps)
-        for iz in arange(len(kz3)):
-            kx3 = 0
-            H3 = self.weyl_surface_states_kxkz(kx3, kz3[iz], N)  # Call the Model Hamiltonian
-            eg, ef = la.eig(H3)  # Find the eigenvalues and eigenvectors
+        kz = linspace(2 * pi, 0, steps)
+        for iz in arange(len(kz)):
+            kx = 0
+            H = self.weyl_surface_states_kxkz(kx, kz[iz], N)  # Call the Model Hamiltonian
+            eg, ef = la.eig(H)  # Find the eigenvalues and eigenvectors
             eg = sort(real(eg))  # Sort the eigenvalues in ascending order
-
             for i in arange(N * Hsize):
                 e4[i, iz] = eg[i]
 

@@ -16,9 +16,10 @@ from numpy import linalg as la
 # Bessel function
 from scipy.special import jv
 
-class Floquet_ChernN:
+class FloquetChernN:
     """ 
-    A class to compute the Chern number topological phase diagram for Case I.
+    A class to compute the Chern number topological phase diagram 
+    for case I - antiferromagnetically coupled layers
     """
 
     def __init__(self, omega, Jc):
@@ -57,11 +58,11 @@ class Floquet_ChernN:
         Ex = E0_vec[0]
         Ey = E0_vec[1]
 
-        eps = 10**(-22)
+        eps = 2*10**(-16)
         Ep = 0.5 * sqrt(3 * Ey**2 + Ex**2 + 2 * sqrt(3) * Ey * Ex * cos(phi))
         Em = 0.5 * sqrt(3 * Ey**2 + Ex**2 - 2 * sqrt(3) * Ey * Ex * cos(phi))
-        P1 = np.arctan(Ex * sin(phi) / (Ey * sqrt(3) + Ex * cos(phi) + eps))
-        P2 = np.arctan(Ex * sin(phi) / (Ey * sqrt(3) - Ex * cos(phi) + eps))
+        P1 = np.arctan(Ex * sin(phi) / ((Ey+eps) * sqrt(3) + Ex * cos(phi) + eps))
+        P2 = np.arctan(Ex * sin(phi) / ((Ey+eps) * sqrt(3) - Ex * cos(phi) + eps))
 
         # Define H0
         r0 = vJ * (jv(0, Ex) + jv(0, Em) *
@@ -99,7 +100,7 @@ class Floquet_ChernN:
         -------
         Inner product of vec 1&2
         """
-        in_product = np.dot(vec2.getH(), vec1)
+        in_product = np.dot(vec1, vec2.conj())
         U = in_product / np.abs(in_product)
         return U
 
@@ -196,8 +197,7 @@ class Floquet_ChernN:
             for iy in range(steps): # Loop over ky
                 ky = ky_int + iy * Dy
                 k_vec = np.array([kx, ky], float)
-                E0 = E0_vec
-                LF, E_k = self.latF_1(k_vec, E0, phi, Dk, Nd)
+                LF, E_k = self.latF_1(k_vec, E0_vec, phi, Dk, Nd)
                 sumN += LF
                # LF_arr[:,ix,iy] = LF.imag # save data for plotting
 
@@ -205,15 +205,16 @@ class Floquet_ChernN:
         chernN = sumN.imag / (2 * np.pi)
         return chernN
 
-    def plot_chernN_A(self, steps, Nk):
+    def plot_chernN_phase(self, steps, Nk):
         """
-        Topological phase diagram for circularly-polarized light
-        
+        Plot Chern number topological phase diagram for case I 
+        with circularly-polarized light and Ex = Ey
+
         Parameters
         ----------
         steps = numerical steps
         Nk: number of steps
-        
+
         Returns
         -------
         Plot of topological phase diagram
@@ -222,10 +223,35 @@ class Floquet_ChernN:
         ChernN_arr = zeros((Nd, Nk, Nk), dtype=float)
         Ex = linspace(0, 3.4, Nk)
         phi = np.linspace(0, 2 * pi, Nk)
-        
         for ie in range(len(Ex)): # loop over Ex = Ey
             for ip in range(len(phi)): # loop over phi
                 E0_vec = np.array([Ex[ie], Ex[ie]], float)
+                ChernN_arr[:, ie, ip] = self.ChernN_1(E0_vec, phi[ip], steps)
+        X, Y = meshgrid(phi, Ex)
+        z_min, z_max = - np.abs(ChernN_arr[0, :, :]).max(), np.abs(ChernN_arr[0, :, :]).max()
+        plt.pcolormesh(X, Y, ChernN_arr[0, :, :], cmap='cool', vmin=z_min, vmax=z_max)
+
+    def plot_chernN_phase_(self, steps, Nk):
+        """
+        Plot Chern number topological phase diagram for case I 
+        with circularly-polarized light and Ey = sqrt(3)*Ex
+
+        Parameters
+        ----------
+        steps = numerical steps
+        Nk: number of steps
+
+        Returns
+        -------
+        Plot of topological phase diagram
+        """
+        Nd = 4  # dimension of Hamiltonain
+        ChernN_arr = zeros((Nd, Nk, Nk), dtype=float)
+        Ex = linspace(0, 3.4, Nk)
+        phi = np.linspace(0, 2 * pi, Nk)
+        for ie in range(len(Ex)): # loop over Ey = sqrt(3)*Ex
+            for ip in range(len(phi)): # loop over phi
+                E0_vec = np.array([Ex[ie], self.rr*Ex[ie]], float)
                 ChernN_arr[:, ie, ip] = self.ChernN_1(E0_vec, phi[ip], steps)
         X, Y = meshgrid(phi, Ex)
         z_min, z_max = - np.abs(ChernN_arr[0, :, :]).max(), np.abs(ChernN_arr[0, :, :]).max()
