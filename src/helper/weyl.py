@@ -1,3 +1,7 @@
+#############################################################
+# This paper is published in Phys. RevB. 97, 094412, (2018).
+#############################################################
+
 # Filter warnings
 import warnings
 warnings.filterwarnings("ignore")
@@ -17,7 +21,6 @@ from numpy import linalg as la
 class WeylMagnon:
     """
     A class for the analysis of Weyl magnon in Kagome antiferromagnets.
-    This paper is published in Phys RevB. 97, 094412, (2018).
     """
     def __init__(self, DM, Jc, h, J=1, S=1, rr = sqrt(3)):
         """ 

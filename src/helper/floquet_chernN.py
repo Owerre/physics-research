@@ -1,3 +1,7 @@
+#############################################################
+# This paper is published in Scientific Reports 9, 7197 (2019).
+#############################################################
+
 # Filter warnings
 import warnings
 warnings.filterwarnings("ignore")
@@ -19,7 +23,7 @@ from scipy.special import jv
 class FloquetChernN:
     """ 
     A class to compute the Chern number topological phase diagram 
-    for case I - antiferromagnetically coupled layers
+    for case I - antiferromagnetically coupled layers.
     """
 
     def __init__(self, omega, Jc):

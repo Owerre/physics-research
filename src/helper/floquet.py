@@ -1,3 +1,7 @@
+#############################################################
+# This paper is published in Scientific Reports 9, 7197 (2019).
+#############################################################
+
 # Filter warnings
 import warnings
 warnings.filterwarnings("ignore")
@@ -19,9 +23,8 @@ from scipy.special import jv
 class FloquetQSHI:
     """ 
     Class for analysing bilayer honeycomb antiferromagnets for two cases:
-    
-    Case I - Antiferromagnetically  coupled layers
-    Case II - Ferromagnetically coupled layers
+    Case I - Antiferromagnetically  coupled layers.
+    Case II - Ferromagnetically coupled layers.
     """
     def __init__(self, Ex, Ey, omega, phi, Jc):
         """
