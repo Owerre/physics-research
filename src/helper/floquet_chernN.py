@@ -1,5 +1,8 @@
 ###################################################
-# S. A. Owerre, Scientific Reports 9, 7197 (2019).
+# Author: S. A. Owerre
+# Date modified: 25/06/2021
+# Class: Chern number
+# Puplication: Scientific Reports 9, 7197 (2019).
 ###################################################
 
 # Filter warnings
