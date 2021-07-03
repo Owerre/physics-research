@@ -2,7 +2,7 @@
 # Author: S. A. Owerre
 # Date modified: 25/06/2021
 # Class: Weyl magnons
-# Puplication: Phys. RevB. 97, 094412, (2018).
+# Publication: Phys. RevB. 97, 094412, (2018).
 ###################################################
 
 # Filter warnings
