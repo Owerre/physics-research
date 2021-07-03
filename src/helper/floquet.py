@@ -1,7 +1,7 @@
 ###################################################
 # Author: S. A. Owerre
 # Date modified: 25/06/2021
-# Class: Chern number
+# Class: Floquet theory
 # Publication: Scientific Reports 9, 7197 (2019).
 ###################################################
 
